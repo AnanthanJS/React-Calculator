@@ -47,3 +47,46 @@ body {
   color: white;
   font-size: 2.5rem;
 }
+
+/* CSS for Scientific Calculator */
+
+.s-calculator-grid {
+  display: grid;
+  margin-top: 2rem;
+  justify-content: center;
+  grid-template-columns: repeat(7, 6rem);
+  grid-template-rows: repeat(5, 6rem);
+}
+.s-calculator-grid > button {
+  cursor: pointer;
+  font-size: 2rem;
+  border: 1px solid white;
+  outline: none;
+  background-color: rgba(219, 245, 169, 0.75);
+}
+.s-calculator-grid > button :hover,
+.s-calculator-grid > button:focus {
+  background-color: rgba(246, 53, 35, 0.75);
+}
+.s-span-two {
+  grid-column: span 2;
+}
+.s-output {
+  grid-column: 1 / -1;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding: 0.75rem;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+.s-output .s-previous-operand {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.5rem;
+}
+.s-output .s-current-operand {
+  color: white;
+  font-size: 2.5rem;
+}
