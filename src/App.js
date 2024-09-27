@@ -44,6 +44,20 @@ function reducer(state, { type, payload }) {
         };
       }
       if (state.previousOperand == null) {
+
+        // For unary operations like sin, set the current operand as the previous operand
+        if (payload.operation === "sin" ||
+           payload.operation === "cos" || 
+           payload.operation === "tan" || 
+           payload.operation === "log") {
+          return {
+            ...state,
+            previousOperand: state.currentOperand,
+            operation: payload.operation,
+            currentOperand: null,
+          };
+        }
+
         return {
           ...state,
           operation: payload.operation,
@@ -52,19 +66,6 @@ function reducer(state, { type, payload }) {
         };
       }
 
-      // Allow log operation only if currentOperand is valid and not zero
-      // if (payload.operation === "log") {
-      //   if (state.currentOperand == null || parseFloat(state.currentOperand) <= 0) {
-      //     return state; // Ignore if no current operand or it's zero/invalid
-      //   }
-      //   return {
-      //     ...state,
-      //     previousOperand: state.currentOperand, // Set current as previous for log
-      //     operation: payload.operation,
-      //     currentOperand: null, // Reset current to get the result in the next evaluate
-      //   };
-      // }
-
       return {
         ...state,
         previousOperand: evaluate(state),
@@ -72,7 +73,13 @@ function reducer(state, { type, payload }) {
         currentOperand: null,
       };
     case ACTIONS.CLEAR:
-      return {};
+      return {
+        ...state,
+        currentOperand: "0", // Set currentOperand to "0" instead of null
+        previousOperand: null, // Reset previousOperand to null
+        operation: null,       // Reset operation to null
+        overwrite: false,      // Reset overwrite to false
+      }
 
     case ACTIONS.DELETE_DIGIT:
       if (state.overwrite) {
@@ -154,16 +161,23 @@ function evaluate({ currentOperand, previousOperand, operation }) {
     case "%":
       computation = prev % current;
       break;
-    case "^": // Handling exponentiation
+    case "^":
       computation = Math.pow(prev, current);
       break;
-    // case "log": // Logarithmic operation
-    //   if (current < 0) {
-    //     return "Error";
-    //   }
-    //   // if (prev === 0) return "0";
-    //   computation = Math.log10(current);
-    //   break;
+    case "sin":
+      computation = Math.sin(current * (Math.PI) / 180);
+      break;
+    case "cos":
+      computation = Math.cos(current * (Math.PI) / 180);
+      break;
+    case "tan":
+      computation = Math.tan(current * (Math.PI) / 180);
+      break;
+    case "log":
+      computation = (Math.log10(current));
+      break;
+    default:
+      return "";
   }
 
   return computation.toString();
