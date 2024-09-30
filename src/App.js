@@ -33,6 +33,20 @@ function reducer(state, { type, payload }) {
         currentOperand: `${state.currentOperand || ""}${payload.digit}`,
       };
     case ACTIONS.CHOOSE_OPERATION:
+
+      // Perform factorial directly
+      if (payload.operation === "x!") {
+        if (state.currentOperand != null) {
+          return {
+            ...state,
+            currentOperand: factorial(parseFloat(state.currentOperand)),
+            operation: null,
+            overwrite: true,
+          };
+        }
+        return state;
+      }
+
       if (state.currentOperand == null && state.previousOperand == null) {
         return state;
       }
@@ -43,6 +57,21 @@ function reducer(state, { type, payload }) {
           operation: payload.operation,
         };
       }
+
+      // if (["sin", "cos", "tan", "log"].includes(payload.operation)) {
+      //   // Directly evaluate sin, cos, tan, log with the currentOperand
+      //   return {
+      //     ...state,
+      //     currentOperand: evaluate({
+      //       currentOperand: state.currentOperand,
+      //       operation: payload.operation,
+      //     }),
+      //     overwrite: true, // Set overwrite so next digit clears
+      //     operation: null,
+      //   };
+      // }
+
+
       if (state.previousOperand == null) {
 
         // For unary operations like sin, set the current operand as the previous operand
@@ -132,10 +161,19 @@ const INTEGER_FORMATTER = new Intl.NumberFormat("en-us", {
 });
 
 function formatOperand(operand) {
-  if (operand == null) return;
-  const [integer, decimal] = operand.split(".");
-  if (decimal == null) return INTEGER_FORMATTER.format(integer);
-  return `${INTEGER_FORMATTER.format(integer)}.${decimal}`;
+  if (operand == null || operand === "") return; // Return "0" for null or empty values
+  
+  if (typeof operand !== "string") {
+    operand = operand.toString(); // Convert to string if operand is a number
+  }
+
+  const [integer, decimal] = operand.split("."); // Safely split the string
+
+  if (decimal == null) {
+    return INTEGER_FORMATTER.format(integer); // Format the integer part if no decimal
+  }
+  
+  return `${INTEGER_FORMATTER.format(integer)}.${decimal}`; // Return formatted integer and decimal parts
 }
 
 function evaluate({ currentOperand, previousOperand, operation }) {
@@ -165,16 +203,23 @@ function evaluate({ currentOperand, previousOperand, operation }) {
       computation = Math.pow(prev, current);
       break;
     case "sin":
-      computation = Math.sin(current * (Math.PI) / 180);
+      computation = Math.sin(current * (Math.PI / 180));
       break;
     case "cos":
-      computation = Math.cos(current * (Math.PI) / 180);
+      computation = Math.cos(current * (Math.PI / 180));
       break;
     case "tan":
-      computation = Math.tan(current * (Math.PI) / 180);
+      computation = Math.tan(current * (Math.PI / 180));
       break;
+    // case "log":
+    //   computation = (Math.log10(current));
+    //   break;
     case "log":
-      computation = (Math.log10(current));
+      if (current > 0) {
+        computation = Math.log10(current); // Base-10 log calculation
+      } else {
+        computation = "Error"; // Log of non-positive numbers is undefined
+      }
       break;
     default:
       return "";
@@ -182,6 +227,18 @@ function evaluate({ currentOperand, previousOperand, operation }) {
 
   return computation.toString();
 }
+
+// Factorial helper function
+function factorial(n) {
+  if (n < 0) return "NaN"; // Factorial not defined for negative numbers
+  if (n === 0 || n === 1) return 1; // 0! and 1! are 1
+  let result = 1;
+  for (let i = 2; i <= n; i++) {
+    result *= i;
+  }
+  return result;
+}
+
 
 function App() {
   const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(
@@ -271,7 +328,7 @@ function App() {
         <DigitButton digit="8" dispatch={dispatch} />
         <DigitButton digit="9" dispatch={dispatch} />
         <OperationButton operation="/" dispatch={dispatch} />
-        <OperationButton operation="Inv" dispatch={dispatch} />
+        <OperationButton operation="x!" dispatch={dispatch} />
         <OperationButton operation="sin" dispatch={dispatch} />
         <OperationButton operation="%" dispatch={dispatch} />
         <DigitButton digit="4" dispatch={dispatch} />
